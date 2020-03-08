@@ -9,5 +9,5 @@ cd /content/ObjectDetectionColab/mmdetection
 git clone https://github.com/EscVM/OIDv4_ToolKit.git
 cd OIDv4_ToolKit
 pip3 install -r requirements.txt
-python3 main.py downloader --classes Human_face --type_csv train --multiclasses 1 --limit 300 --y
-python3 main.py downloader --classes Human_face  --type_csv validation --multiclasses 1 --limit 100 --y
+python3 main.py downloader --classes Panda --type_csv train --multiclasses 1 --limit 300 --y
+python3 main.py downloader --classes Panda  --type_csv validation --multiclasses 1 --limit 100 --y
