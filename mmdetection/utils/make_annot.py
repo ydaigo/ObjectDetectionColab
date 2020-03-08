@@ -9,14 +9,12 @@ import mmcv
 import random
 from scipy import io
 
-def annot(images_path, label_dict, train_data=True,anno_num="all"):
+def annot(images_path, label_dict, train_data=True):
     """Make annotations for mmdetection library from Open Image Dataset Source.
     Args:
         images_path (str): path to images.
         label_dict (dict (str: int)): dictionary with matching class names to class labels.
         train_data (boolean): if True - train data, else: validation data.
-        ======================
-        anno_all : 除外するクラスを指定。allはすべてのクラスを使用する。
     """
     label_path = images_path+'Label/*.txt'
     save_val_path = './annotations_val.pkl'
@@ -30,8 +28,6 @@ def annot(images_path, label_dict, train_data=True,anno_num="all"):
             # Create annot dict
             annot_instance = {}
             # Filename is the path to img
-
-                
             annot_instance['filename'] = images_path+name[:-3].split('/')[-1]+'jpg'
             image = cv2.imread(annot_instance['filename'])
             h, w = image.shape[:2]
@@ -53,26 +49,6 @@ def annot(images_path, label_dict, train_data=True,anno_num="all"):
                     annotations_train.append(annot_instance)
                 else:
                     annotations_val.append(annot_instance)
-            print(annot_instance['ann']['labels'])
-            print(anno_num)
-            my_flag = 0 
-            if anno_num == "all":
-                pass
-            for num in anno_num:
-                if num in annot_instance['ann']['labels']:
-                    my_flag = 1
-                    break
-            if my_flag != 1:
-                if train_data:
-                    annotations_train.pop()
-                    print("del")
-                else:
-                    annotations_val.pop()
-                            
-
-
-                
-
     if train_data:
         mmcv.dump(annotations_train, save_train_path)
         print('Annot train ready: {}, len {}'.format(save_train_path, len(annotations_train)))
