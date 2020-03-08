@@ -19,7 +19,7 @@ model = dict(
         in_channels=256,
         feat_channels=256,
         anchor_scales=[8],
-        anchor_ratios=[0.5, 1.0, 2.0],
+        anchor_ratios=[0.1,0.3,0.5, 1.0, 2.0,5.0,10.0],
         anchor_strides=[4, 8, 16, 32, 64],
         target_means=[.0, .0, .0, .0],
         target_stds=[1.0, 1.0, 1.0, 1.0],
@@ -102,42 +102,53 @@ dataset_type = 'CustomDataset'
 data_root = ''
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+    
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='Resize', img_scale=(1000, 650), keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1000,650),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(type='Normalize', **img_norm_cfg),
+            dict(type='Pad', size_divisor=32),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img']),
+        ])
+]
+
 data = dict(
-    imgs_per_gpu=6,
-    workers_per_gpu=6,
+    imgs_per_gpu=4,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         ann_file='annotations_train.pkl',
         img_prefix='',
-        img_scale=(1000, 650),
-        img_norm_cfg=img_norm_cfg,
-        size_divisor=32,
-        flip_ratio=0.5,
-        with_mask=False,
-        with_crowd=True,
-        with_label=True),
+        pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         ann_file='annotations_val.pkl',
         img_prefix='',
-        img_scale=(1000, 650),
-        img_norm_cfg=img_norm_cfg,
-        size_divisor=32,
-        flip_ratio=0,
-        with_mask=False,
-        with_crowd=True,
-        with_label=True),
+        pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         ann_file=None,
         img_prefix='',
-        img_scale=(1000, 650),
-        img_norm_cfg=img_norm_cfg,
-        size_divisor=32,
-        flip_ratio=0,
-        with_mask=False,
-        with_label=False,
-        test_mode=True))
+        pipeline=test_pipeline))
+evaluation = dict(interval=1)
+
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -148,7 +159,7 @@ lr_config = dict(
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
     step=[6, 9])
-checkpoint_config = dict(interval=1)
+checkpoint_config = dict(interval=1,create_symlink=False)
 # yapf:disable
 log_config = dict(
     interval=60,
