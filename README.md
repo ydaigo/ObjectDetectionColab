@@ -1,4 +1,4 @@
 # ObjectDetectionColab
 
-ObjectDetectionColab.ipynb
+ObjectDetectionColab.ipynb  
 このファイルをGoogle Colabratoryで開く。
